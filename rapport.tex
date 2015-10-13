@@ -1,0 +1,172 @@
+\documentclass[a4paper,11pt]{article}%
+\usepackage{a4wide}%
+
+\usepackage[francais]{babel}%
+\usepackage[utf8]{inputenc}%
+\usepackage[T1]{fontenc}%
+
+\usepackage{graphicx}%
+\usepackage{xspace}%
+
+\usepackage{url} \urlstyle{sf}%
+\DeclareUrlCommand\email{\urlstyle{sf}}%
+
+\usepackage{mathpazo}%
+\let\bfseriesaux=\bfseries%
+\renewcommand{\bfseries}{\sffamily\bfseriesaux}
+
+\newenvironment{keywords}%
+{\description\item[Mots-clés.]}%
+{\enddescription}
+
+
+\newenvironment{remarque}%
+{\description\item[Remarque.]\sl}%
+{\enddescription}
+
+\font\manual=manfnt
+\newcommand{\dbend}{{\manual\char127}}
+
+\newenvironment{attention}%
+{\description\item[\dbend]\sl}%
+{\enddescription}
+
+\usepackage{listings}%
+
+\lstset{%
+  basicstyle=\sffamily,%
+  columns=fullflexible,%
+  language=caml,%
+  frame=lb,%
+  frameround=fftf,%
+}%
+
+\lstMakeShortInline{|}
+
+\parskip=0.3\baselineskip%
+\sloppy%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Le titre de votre projet}
+
+\author{Vos noms}
+
+\date{la date de rendu}
+
+\maketitle
+
+\begin{abstract}
+  Quelques lignes de résumé, 5~au plus.
+\begin{keywords}
+ Quelques mots-clés, séparés par des points-virgules, au singulier,
+ pour terminer le résumé.
+\end{keywords}
+\end{abstract}
+
+\begin{attention}
+  Un article \LaTeX\ est un programme. Son code \emph{source} doit être
+  rédigé et mis en page avec autant de soin que votre code Caml,
+  indépendamment de l'efficacité (l'élégance) du résultat de son
+  exécution, c'est-à-dire le texte mis en page.
+\end{attention}
+
+\section{Pavage de Penrose}
+\label{sec:Penrose}
+
+Une première section.
+
+Voici comment mettre du code Caml |let x = 1 in x+1;;| en
+ligne. Attention, tout doit être sur la même ligne dans le fichier
+source. Le caractère de séparation est défini par la commande
+``lstMakeShortInline'' ci-dessus. Utilisez éventuellement des
+commentaires \LaTeX\ pour garantir qu'il n'y a pas de coupure, comme ceci:
+%
+|let x = 1 in x+1;;|
+%
+comme ceci. 
+
+Pour mettre du code en ``display'', utilisez l'environnement listings:
+\begin{lstlisting}
+let x = 1
+in x+1;;
+\end{lstlisting}
+Tout est bien sûr paramétrable. Si vous avez du goût pour la mise en
+page, n'hésitez pas!
+
+Et voici comme insérer une figure:
+\begin{figure}
+  \centering
+  \includegraphics[width=0.5\textwidth]{Obtus-divise}
+  \caption{Voici une jolie figure. Attention, la commande ``label''
+    doit être après la commande ``caption''.}
+  \label{fig:example}
+\end{figure}
+
+\section{Tours de Hanoï}
+
+Et une deuxième section.
+
+\begin{remarque}
+  Ici une remarque.
+\end{remarque}
+
+\begin{attention}
+  Et ici un avertissement.
+\end{attention}
+
+\section{Conclusion}
+
+Quelques mots de conclusion. Qu'avez-vous appris? Vous pouvez aussi insérer une bibliographie à la fin de votre rapport.
+
+\clearpage % Pour être sûr que toutes les figures sont bien éjectées
+
+\appendix % Passer en numérotation en lettres
+
+\section{Annexe: auto-évaluation}
+
+Toute l'explication de cette démarche se trouve à l'adresse
+\url{http://fr.wikipedia.org/wiki/SWOT}. (Notez que ce lien est actif,
+vous pouvez cliquer dessus.)
+\begin{quotation}
+  L'analyse (ou la matrice) SWOT est définie par les services de la
+  Commission européenne comme un outil d'analyse stratégique. Il
+  combine l'étude des forces et des faiblesses d'une organisation,
+  d'un territoire, d'un secteur, etc. avec celle des opportunités et
+  des menaces de son environnement, afin d'aider à la définition
+  d'une stratégie de développement.
+\end{quotation}
+
+\subsubsection*{Points forts}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+\subsubsection*{Points faibles}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+\subsubsection*{Améliorations possibles}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+\subsubsection*{Difficultés à anticiper}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+
+\end{document}
+
