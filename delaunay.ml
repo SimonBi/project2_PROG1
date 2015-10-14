@@ -34,9 +34,34 @@ let direct t =
   else if ccw c a b then [c; a; b]
   else [c; b; a];;
 
-let determinant m = 
-  if Array.length m = 2 then (m.(0).(0) * m.(1).(1)) - (m.(0).(1) * m.(1).(0))
-  else Array.length m;;
+let rm_col_row a col = 
+  let rec rm_row a' i = if i = 0 then tl a'
+                        else (hd a')::(rm_row (tl a') (i-1)) in
+  let rec rm_col a' i = if length a' = 0 then []
+                        else (rm_row (hd a') i)::(rm_col (tl a') i) in
+  let m_list = Array.to_list (Array.map Array.to_list a) in
+  let newA = rm_row (rm_col m_list 0) col in
+  Array.of_list (map Array.of_list newA);;
+
+let determinant m =
+  let rec determinant' indexes =
+    let get_point i j = m.(fst indexes.(i).(j)).(snd indexes.(i).(j)) in
+    if Array.length indexes = 2 then
+      let a' = get_point 0 0
+      and b' = get_point 0 1
+      and c' = get_point 1 0
+      and d' = get_point 1 1 in
+      (a' * d') - (b' * c')
+    else
+      let rec decomp_det i =
+        if i = Array.length indexes then 0
+        else ((-1 * (i mod 2)) * (get_point 0 i)
+              * (determinant' (rm_col_row indexes i)))
+             + (decomp_det (i+1)) in
+      decomp_det 0
+  in
+  determinant' (Array.init (Array.length m)
+                (fun x -> (Array.init (Array.length m) (fun y -> (x,y)))));;
 
 let in_circle t d = 
   let correctT = direct t in
@@ -48,3 +73,5 @@ let in_circle t d =
             [|fst c; snd c; ((fst c) * (fst c)) + ((snd c) * (snd c)); 1|]; 
             [|fst d; snd d; ((fst d) * (fst d)) + ((snd d) * (snd d)); 1|]|] in
   determinant m >= 0;;
+
+print_int (determinant [|[|-1; 2; 5|]; [|1; 2; 3|]; [|-2; 8; 10|]|]);;
