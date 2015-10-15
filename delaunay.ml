@@ -5,7 +5,7 @@ Authors : Simon Bihel
 Institute : ENS Rennes, Computer Science Department
 *)
 
-open List
+open List;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -18,9 +18,16 @@ let print_array a = for i = 0 to ((Array.length a)-1) do
 let print_matrix m = for i = 0 to ((Array.length m)-1) do
                        print_array m.(i)
                      done;;
+let print_tuple_int t = print_int (fst t); print_string ","; print_int (snd t); print_string " ";;
+let print_tuple t = print_tuple_int (fst t); print_string ",,"; print_tuple_int (snd t);;
+let rec print_list l = if length l = 0 then print_string "\n"
+                       else (print_int (hd l); print_string " "; print_list (tl l));;
+let rec print_list_tuple l = if length l = 0 then print_string "\n"
+else (print_tuple (hd l); print_list_tuple (tl l));;
 
 let rec random nb max_x max_y = if nb = 0 then []
-  else (Random.int max_x, Random.int max_y)::(random (nb-1) max_x max_y);;
+else {x= (Random.float (float_of_int max_x)); y= (Random.float (float_of_int max_y))}
+       ::(random (nb-1) max_x max_y);;
 
 let ccw a b c = 
   let m1 = (fst b) - (fst a)
@@ -82,3 +89,23 @@ let in_circle t d =
             [|fst d; snd d; ((fst d) * (fst d)) + ((snd d) * (snd d)); 1|]|] in
   determinant m >= 0;;
 
+let edges_triangle t = [(hd t, hd (tl t)); (hd t, hd (tl (tl t))); (hd (tl t), hd (tl (tl t)))];;
+
+let rec extract_edges t_set = 
+  if length t_set = 0 then []
+  else (edges_triangle (hd t_set)) @ (extract_edges (tl t_set));;
+
+let rec keep_single l = 
+  if length l = 0 then []
+  else try ignore (find (fun x -> x=(hd l) || (snd x, fst x)=(hd l)) (tl l)); 
+           keep_single (filter (fun x -> x<>(hd l) && (snd x, fst x)<>(hd l)) (tl l))
+       with | Not_found -> (hd l)::(keep_single (tl l));;
+
+let border t_set = 
+  let edges_set = extract_edges t_set in
+  keep_single edges_set;;
+
+let add_point t_set p =
+  t_set;;
+
+(* print_list_tuple (border [[(1,3);(2,0);(4,5)];[(4,5);(7,6);(3,9)];[(4,5);(2,0);(7,0)]]);; *)
