@@ -12,6 +12,13 @@ type triangle = {p1: point; p2: point; p3: point};;
 type point_set = point list;;
 type triangle_set = triangle list;;
 
+let print_array a = for i = 0 to ((Array.length a)-1) do
+                      print_int (fst a.(i)); print_string ","; print_int (snd a.(i)); print_string " "
+                    done; print_string "\n";;
+let print_matrix m = for i = 0 to ((Array.length m)-1) do
+                       print_array m.(i)
+                     done;;
+
 let rec random nb max_x max_y = if nb = 0 then []
   else (Random.int max_x, Random.int max_y)::(random (nb-1) max_x max_y);;
 
@@ -40,11 +47,12 @@ let rm_col_row a col =
   let rec rm_col a' i = if length a' = 0 then []
                         else (rm_row (hd a') i)::(rm_col (tl a') i) in
   let m_list = Array.to_list (Array.map Array.to_list a) in
-  let newA = rm_row (rm_col m_list 0) col in
+  let newA = rm_col (rm_row m_list 0) col in
   Array.of_list (map Array.of_list newA);;
 
 let determinant m =
   let rec determinant' indexes =
+    print_matrix indexes;
     let get_point i j = m.(fst indexes.(i).(j)).(snd indexes.(i).(j)) in
     if Array.length indexes = 2 then
       let a' = get_point 0 0
@@ -55,7 +63,7 @@ let determinant m =
     else
       let rec decomp_det i =
         if i = Array.length indexes then 0
-        else ((-1 * (i mod 2)) * (get_point 0 i)
+        else ((int_of_float (-1. ** (float_of_int (i mod 2)))) * (get_point 0 i)
               * (determinant' (rm_col_row indexes i)))
              + (decomp_det (i+1)) in
       decomp_det 0
@@ -74,4 +82,3 @@ let in_circle t d =
             [|fst d; snd d; ((fst d) * (fst d)) + ((snd d) * (snd d)); 1|]|] in
   determinant m >= 0;;
 
-print_int (determinant [|[|-1; 2; 5|]; [|1; 2; 3|]; [|-2; 8; 10|]|]);;
