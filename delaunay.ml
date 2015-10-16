@@ -30,12 +30,12 @@ else {x= (Random.float (float_of_int max_x)); y= (Random.float (float_of_int max
        ::(random (nb-1) max_x max_y);;
 
 let ccw a b c = 
-  let m1 = (fst b) - (fst a)
-  and m2 = (fst c) - (fst a)
-  and m3 = (snd b) - (snd a)
-  and m4 = (snd c) - (snd a)
-  in let det = (m1*m4)-(m2*m3)
-  in det >= 0;;
+  let m1 = (b.x) -. (a.x)
+  and m2 = (c.x) -. (a.x)
+  and m3 = (b.y) -. (a.y)
+  and m4 = (c.y) -. (a.y)
+  in let det = (m1*.m4) -. (m2*.m3)
+  in det >= 0.;;
 
 let direct t = 
   let a = hd t
@@ -66,13 +66,13 @@ let determinant m =
       and b' = get_point 0 1
       and c' = get_point 1 0
       and d' = get_point 1 1 in
-      (a' * d') - (b' * c')
+      (a' *. d') -. (b' *. c')
     else
       let rec decomp_det i =
-        if i = Array.length indexes then 0
-        else ((int_of_float (-1. ** (float_of_int (i mod 2)))) * (get_point 0 i)
-              * (determinant' (rm_col_row indexes i)))
-             + (decomp_det (i+1)) in
+        if i = Array.length indexes then 0.
+        else ((-1. ** (float_of_int (i mod 2))) *. (get_point 0 i)
+              *. (determinant' (rm_col_row indexes i)))
+             +. (decomp_det (i+1)) in
       decomp_det 0
   in
   determinant' (Array.init (Array.length m)
@@ -83,11 +83,11 @@ let in_circle t d =
   let a = hd correctT
   and b = hd (tl correctT)
   and c = hd (tl (tl correctT)) in
-  let m = [|[|fst a; snd a; ((fst a) * (fst a)) + ((snd a) * (snd a)); 1|]; 
-            [|fst b; snd b; ((fst b) * (fst b)) + ((snd b) * (snd b)); 1|]; 
-            [|fst c; snd c; ((fst c) * (fst c)) + ((snd c) * (snd c)); 1|]; 
-            [|fst d; snd d; ((fst d) * (fst d)) + ((snd d) * (snd d)); 1|]|] in
-  determinant m >= 0;;
+  let m = [|[|a.x; a.y; ((a.x)**2.) +. ((a.y)**2.); 1.|]; 
+            [|b.x; b.y; ((b.x)**2.) +. ((b.y)**2.); 1.|]; 
+            [|c.x; c.y; ((c.x)**2.) +. ((c.y)**2.); 1.|]; 
+            [|d.x; d.y; ((d.x)**2.) +. ((d.y)**2.); 1.|]|] in
+  determinant m >= 0.;;
 
 let edges_triangle t = [(hd t, hd (tl t)); (hd t, hd (tl (tl t))); (hd (tl t), hd (tl (tl t)))];;
 
@@ -108,4 +108,4 @@ let border t_set =
 let add_point t_set p =
   t_set;;
 
-(* print_list_tuple (border [[(1,3);(2,0);(4,5)];[(4,5);(7,6);(3,9)];[(4,5);(2,0);(7,0)]]);; *)
+(* print_list_tuple (border [[(1.,3.);(2.,0.);(4.,5.)];[(4.,5.);(7.,6.);(3.,9.)];[(4.,5.);(2.,0.);(7.,0.)]]);; *)
