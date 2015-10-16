@@ -38,15 +38,15 @@ let ccw a b c =
   in det >= 0.;;
 
 let direct t = 
-  let a = hd t
-  and b = hd (tl t)
-  and c = hd (tl (tl t)) in
-  if ccw a b c then [a; b; c]
-  else if ccw a c b then [a; c; b]
-  else if ccw b a c then [b; a; c]
-  else if ccw b c a then [b; c; a]
-  else if ccw c a b then [c; a; b]
-  else [c; b; a];;
+  let a = t.p1
+  and b = t.p2
+  and c = t.p3 in
+  if ccw a b c then {p1=a;p2=b;p3=c}
+  else if ccw a c b then {p1=a;p2=c;p3=b}
+  else if ccw b a c then {p1=b;p2=a;p3=c}
+  else if ccw b c a then {p1=b;p2=c;p3=a}
+  else if ccw c a b then {p1=c;p2=a;p3=b}
+  else {p1=c;p2=b;p3=a};;
 
 let rm_col_row a col = 
   let rec rm_row a' i = if i = 0 then tl a'
@@ -80,16 +80,16 @@ let determinant m =
 
 let in_circle t d = 
   let correctT = direct t in
-  let a = hd correctT
-  and b = hd (tl correctT)
-  and c = hd (tl (tl correctT)) in
+  let a = correctT.p1
+  and b = correctT.p2
+  and c = correctT.p3 in
   let m = [|[|a.x; a.y; ((a.x)**2.) +. ((a.y)**2.); 1.|]; 
             [|b.x; b.y; ((b.x)**2.) +. ((b.y)**2.); 1.|]; 
             [|c.x; c.y; ((c.x)**2.) +. ((c.y)**2.); 1.|]; 
             [|d.x; d.y; ((d.x)**2.) +. ((d.y)**2.); 1.|]|] in
   determinant m >= 0.;;
 
-let edges_triangle t = [(hd t, hd (tl t)); (hd t, hd (tl (tl t))); (hd (tl t), hd (tl (tl t)))];;
+let edges_triangle t = [(t.p1, t.p2); (t.p1, t.p3); (t.p2, t.p3)];;
 
 let rec extract_edges t_set = 
   if length t_set = 0 then []
@@ -105,7 +105,27 @@ let border t_set =
   let edges_set = extract_edges t_set in
   keep_single edges_set;;
 
+let rec select_t t_set p =
+  if length t_set = 0 then []
+  else if (in_circle (hd t_set) p) then
+         (hd t_set)::(select_t (tl t_set) p)
+       else select_t (tl t_set) p;;
+
+let rec rm_t t_set p =
+  if length t_set = 0 then []
+  else if (in_circle (hd t_set) p) then
+         rm_t (tl t_set) p
+       else (hd t_set)::(rm_t (tl t_set) p);;
+
+let rec new_triangles edges_set p =
+  if length edges_set = 0 then []
+  else begin
+    let t = hd edges_set in
+    {p1=t.p1; p2=t.p2; p3=p}::(new_triangles (tl edges_set) p)
+  end;;
+
 let add_point t_set p =
-  t_set;;
+  let to_rm_t = select_t t_set p in
+  (new_triangles to_rm_t p) @ (rm_t t_set p);;
 
 (* print_list_tuple (border [[(1.,3.);(2.,0.);(4.,5.)];[(4.,5.);(7.,6.);(3.,9.)];[(4.,5.);(2.,0.);(7.,0.)]]);; *)
