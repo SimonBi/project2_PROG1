@@ -12,8 +12,10 @@ open List;;
 close_graph ();;
 open_graph " 800x600";;
 
+(** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
 let wait_time = 0.5;;
+let nb_points = 150;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -33,12 +35,17 @@ let rec print_list l = if length l = 0 then print_string "\n"
 let rec print_list_tuple l = if length l = 0 then print_string "\n"
 else (print_tuple (hd l); print_list_tuple (tl l));;*)
 
-let minisleep sec = ignore (Unix.select [] [] [] sec);;
+(** Pause the process. *)
+let minisleep sec = 
+  try ignore (Unix.select [] [] [] sec) with 
+    | _ -> print_string "Sleep not working on OSX or interrupted system call.\n";;
 
+(** Create a random point in a limited space. *)
 let rec random nb max_x max_y = if nb = 0 then []
 else {x= (Random.float (float_of_int max_x)); y= (Random.float (float_of_int max_y))}
        ::(random (nb-1) max_x max_y);;
 
+(** Test if a triangle is in its direct form. *)
 let ccw a b c = 
   let m1 = (b.x) -. (a.x)
   and m2 = (c.x) -. (a.x)
@@ -47,6 +54,7 @@ let ccw a b c =
   in let det = (m1*.m4) -. (m2*.m3)
   in det >= 0.;;
 
+(** Put a triangle in its direct form. *)
 let direct t = 
   let a = t.p1
   and b = t.p2
@@ -58,6 +66,7 @@ let direct t =
   else if ccw c a b then {p1=c;p2=a;p3=b}
   else {p1=c;p2=b;p3=a};;
 
+(** Remove the first row and a particular column of a matrix. *)
 let rm_col_row a col = 
   let rec rm_row a' i = 
     if length a' = 0 then []
@@ -70,6 +79,7 @@ let rm_col_row a col =
   let newA = rm_col (rm_row m_list 0) col in
   Array.of_list (map Array.of_list newA);;
 
+(** Compute the determinant of a nxn matrix. *)
 let determinant m =
   let rec determinant' indexes =
     let get_point i j = m.(fst indexes.(i).(j)).(snd indexes.(i).(j)) in
@@ -90,6 +100,7 @@ let determinant m =
   determinant' (Array.init (Array.length m)
                 (fun x -> (Array.init (Array.length m) (fun y -> (x,y)))));;
 
+(** Test if a point is in the circumscribed circle of a triangle. *)
 let in_circle t d = 
   let correctT = direct t in
   let a = correctT.p1
@@ -101,34 +112,45 @@ let in_circle t d =
             [|d.x; d.y; ((d.x)**2.) +. ((d.y)**2.); 1.|]|] in
   determinant m >= 0.;;
 
+(** Get the list of edges of a single triangle. *)
 let edges_triangle t = [(t.p1, t.p2); (t.p1, t.p3); (t.p2, t.p3)];;
 
+(** Get the list of edges of all the triangles of a list. *)
 let rec extract_edges t_set = 
   if length t_set = 0 then []
   else (edges_triangle (hd t_set)) @ (extract_edges (tl t_set));;
 
+(** Remove the items that appear more than one time in a list. *)
 let rec keep_single l = 
   if length l = 0 then []
-  else try ignore (find (fun x -> x=(hd l) || (snd x, fst x)=(hd l)) (tl l)); 
-           keep_single (filter (fun x -> x<>(hd l) && (snd x, fst x)<>(hd l)) (tl l))
+  else try ignore (find (fun x -> x=(hd l) || (snd x, fst x)=(hd l)) (tl l));
+           keep_single (filter (fun x -> x<>(hd l) &&
+                                        (snd x, fst x)<>(hd l)) (tl l))
        with | Not_found -> (hd l)::(keep_single (tl l));;
 
+(** Get the convex border of a list of triangles. *)
 let border t_set = 
   let edges_set = extract_edges t_set in
   keep_single edges_set;;
 
+(** Remove from a list the triangles that don't have the point in their 
+circumscribed circle. *)
 let rec select_t t_set p =
   if length t_set = 0 then []
   else if (in_circle (hd t_set) p) then
          (hd t_set)::(select_t (tl t_set) p)
        else select_t (tl t_set) p;;
 
+(** Remove from a list the triangles that have the point in their circumscribed
+circle. *)
 let rec rm_t t_set p =
   if length t_set = 0 then []
   else if (in_circle (hd t_set) p) then
          rm_t (tl t_set) p
        else (hd t_set)::(rm_t (tl t_set) p);;
 
+(** From the list of edges that constitute the convex border, create the new 
+triangles with the new point. *)
 let rec new_triangles edges_set p =
   if length edges_set = 0 then []
   else begin
@@ -136,10 +158,12 @@ let rec new_triangles edges_set p =
     {p1=(fst t); p2=(snd t); p3=p}::(new_triangles (tl edges_set) p)
   end;;
 
+(** Add a new point to the existing triangles with eventual changes to them. *)
 let add_point t_set p =
   let to_rm_t = select_t t_set p in
   (new_triangles (border to_rm_t) p) @ (rm_t t_set p);;
 
+(** Do the Delaunay's triangulation on a list of points in a limited space. *)
 let delaunay points max_x max_y = 
   let t1 = {p1={x=0.;y=0.}; p2={x=0.;y=max_y}; p3={x=max_x;y=max_y}}
   and t2 = {p1={x=0.;y=0.}; p2={x=max_x;y=0.}; p3={x=max_x;y=max_y}} in
@@ -148,6 +172,7 @@ let delaunay points max_x max_y =
     else add_point (insert_points (tl points') t_set') (hd points') in
   insert_points points [t1; t2];;
 
+(** Draw points of a list. *)
 let rec draw_points points =
   set_color red;
   if length points > 0 then (
@@ -156,6 +181,7 @@ let rec draw_points points =
     draw_points (tl points)
   )
 
+(** Draw points that should be hidden. *)
 let rec draw_hidden_points points =
   set_color black;
   if length points > 0 then (
@@ -164,21 +190,25 @@ let rec draw_hidden_points points =
     draw_hidden_points (tl points)
   )
 
+(** Draw the point that will be added next. *)
 let draw_point_added point =
   set_color green;
   fill_circle (int_of_float point.x) (int_of_float point.y) 4;;
 
+(** Draw a triangle and its points. *)
 let draw_triangle t = 
-  draw_points [t.p1; t.p2; t.p3];
   set_color black;
   draw_poly (Array.of_list 
               (map (fun x -> (int_of_float x.x, int_of_float x.y)) 
-                   [t.p1; t.p2; t.p3]));;
+                   [t.p1; t.p2; t.p3]));
+  draw_points [t.p1; t.p2; t.p3];;
 
+(** Draw triangles of a list. *)
 let rec draw_triangles triangles =
   if length triangles = 0 then ()
   else (draw_triangle (hd triangles); draw_triangles (tl triangles));;
 
+(** Do the delaunay's triangulation with pauses and graphical visualization. *)
 let delaunay_step_by_step points =
   let max_x = float_of_int (fst dim)
   and max_y = float_of_int (snd dim) in
@@ -189,6 +219,7 @@ let delaunay_step_by_step points =
     else (
       let new_triangles = insert_points (tl points') t_set' ((hd points')::hidden_points') in
       minisleep wait_time;
+      while button_down () do minisleep wait_time done;
       clear_graph ();
       draw_point_added (hd points');
       draw_hidden_points hidden_points';
@@ -199,7 +230,7 @@ let delaunay_step_by_step points =
   clear_graph ();
   draw_triangles final_triangles;;
 
-delaunay_step_by_step (random 50 (fst dim) (snd dim));;
+delaunay_step_by_step (random nb_points (fst dim) (snd dim));;
 
 (** Ask to exit. *)
 let quit_loop = ref false in
