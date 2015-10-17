@@ -4,15 +4,23 @@ Course : PROG1
 Authors : Simon Bihel
 Institute : ENS Rennes, Computer Science Department
 *)
-
+#load "graphics.cma"
+#load "unix.cma"
+open Graphics;;
 open List;;
+
+close_graph ();;
+open_graph " 800x600";;
+
+let dim = (800, 600);;
+let wait_time = 0.5;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
 type point_set = point list;;
 type triangle_set = triangle list;;
 
-let print_array a = for i = 0 to ((Array.length a)-1) do
+(*let print_array a = for i = 0 to ((Array.length a)-1) do
                       print_int (fst a.(i)); print_string ","; print_int (snd a.(i)); print_string " "
                     done; print_string "\n";;
 let print_matrix m = for i = 0 to ((Array.length m)-1) do
@@ -23,7 +31,9 @@ let print_tuple t = print_tuple_int (fst t); print_string ",,"; print_tuple_int 
 let rec print_list l = if length l = 0 then print_string "\n"
                        else (print_int (hd l); print_string " "; print_list (tl l));;
 let rec print_list_tuple l = if length l = 0 then print_string "\n"
-else (print_tuple (hd l); print_list_tuple (tl l));;
+else (print_tuple (hd l); print_list_tuple (tl l));;*)
+
+let minisleep sec = ignore (Unix.select [] [] [] sec);;
 
 let rec random nb max_x max_y = if nb = 0 then []
 else {x= (Random.float (float_of_int max_x)); y= (Random.float (float_of_int max_y))}
@@ -49,8 +59,11 @@ let direct t =
   else {p1=c;p2=b;p3=a};;
 
 let rm_col_row a col = 
-  let rec rm_row a' i = if i = 0 then tl a'
-                        else (hd a')::(rm_row (tl a') (i-1)) in
+  let rec rm_row a' i = 
+    if length a' = 0 then []
+    else (
+      if i = 0 then tl a'
+      else (hd a')::(rm_row (tl a') (i-1)) ) in
   let rec rm_col a' i = if length a' = 0 then []
                         else (rm_row (hd a') i)::(rm_col (tl a') i) in
   let m_list = Array.to_list (Array.map Array.to_list a) in
@@ -59,7 +72,6 @@ let rm_col_row a col =
 
 let determinant m =
   let rec determinant' indexes =
-    print_matrix indexes;
     let get_point i j = m.(fst indexes.(i).(j)).(snd indexes.(i).(j)) in
     if Array.length indexes = 2 then
       let a' = get_point 0 0
@@ -121,11 +133,80 @@ let rec new_triangles edges_set p =
   if length edges_set = 0 then []
   else begin
     let t = hd edges_set in
-    {p1=t.p1; p2=t.p2; p3=p}::(new_triangles (tl edges_set) p)
+    {p1=(fst t); p2=(snd t); p3=p}::(new_triangles (tl edges_set) p)
   end;;
 
 let add_point t_set p =
   let to_rm_t = select_t t_set p in
-  (new_triangles to_rm_t p) @ (rm_t t_set p);;
+  (new_triangles (border to_rm_t) p) @ (rm_t t_set p);;
 
-(* print_list_tuple (border [[(1.,3.);(2.,0.);(4.,5.)];[(4.,5.);(7.,6.);(3.,9.)];[(4.,5.);(2.,0.);(7.,0.)]]);; *)
+let delaunay points max_x max_y = 
+  let t1 = {p1={x=0.;y=0.}; p2={x=0.;y=max_y}; p3={x=max_x;y=max_y}}
+  and t2 = {p1={x=0.;y=0.}; p2={x=max_x;y=0.}; p3={x=max_x;y=max_y}} in
+  let rec insert_points points' t_set' = 
+    if length points' = 0 then t_set'
+    else add_point (insert_points (tl points') t_set') (hd points') in
+  insert_points points [t1; t2];;
+
+let rec draw_points points =
+  set_color red;
+  if length points > 0 then (
+    let p = hd points in
+    fill_circle (int_of_float p.x) (int_of_float p.y) 4;
+    draw_points (tl points)
+  )
+
+let rec draw_hidden_points points =
+  set_color black;
+  if length points > 0 then (
+    let p = hd points in
+    fill_circle (int_of_float p.x) (int_of_float p.y) 4;
+    draw_hidden_points (tl points)
+  )
+
+let draw_point_added point =
+  set_color green;
+  fill_circle (int_of_float point.x) (int_of_float point.y) 4;;
+
+let draw_triangle t = 
+  draw_points [t.p1; t.p2; t.p3];
+  set_color black;
+  draw_poly (Array.of_list 
+              (map (fun x -> (int_of_float x.x, int_of_float x.y)) 
+                   [t.p1; t.p2; t.p3]));;
+
+let rec draw_triangles triangles =
+  if length triangles = 0 then ()
+  else (draw_triangle (hd triangles); draw_triangles (tl triangles));;
+
+let delaunay_step_by_step points =
+  let max_x = float_of_int (fst dim)
+  and max_y = float_of_int (snd dim) in
+  let t1 = {p1={x=0.;y=0.}; p2={x=0.;y=max_y}; p3={x=max_x;y=max_y}}
+  and t2 = {p1={x=0.;y=0.}; p2={x=max_x;y=0.}; p3={x=max_x;y=max_y}} in
+  let rec insert_points points' t_set' hidden_points' = 
+    if length points' = 0 then t_set'
+    else (
+      let new_triangles = insert_points (tl points') t_set' ((hd points')::hidden_points') in
+      minisleep wait_time;
+      clear_graph ();
+      draw_point_added (hd points');
+      draw_hidden_points hidden_points';
+      draw_triangles new_triangles;
+      add_point new_triangles (hd points') ) in
+  let final_triangles = insert_points points [t1; t2] [] in
+  minisleep wait_time;
+  clear_graph ();
+  draw_triangles final_triangles;;
+
+delaunay_step_by_step (random 50 (fst dim) (snd dim));;
+
+(** Ask to exit. *)
+let quit_loop = ref false in
+while not !quit_loop
+do
+  print_string "Exit ? (y/n) ";
+  let command_input = read_line () in
+  if command_input.[0] = 'y' then
+    quit_loop := true
+done;;
