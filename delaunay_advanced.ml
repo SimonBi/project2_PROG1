@@ -180,7 +180,62 @@ let add_point t_set p =
   let to_rm_t = select_t t_set p in
   (new_triangles (border to_rm_t) p) @ (rm_t t_set p);;
 
-let convex_hull points = [(hd points,hd (tl points)); (hd points,hd (tl (tl points))); (hd (tl points), hd (tl (tl points)))];;
+let edges_from_points p =
+  let rec edges' p =
+    if length p = 1 then []
+    else (hd p, hd (tl p))::(edges' (tl p)) in
+  (hd p, nth p ((length p)-1))::(edges' p);;
+
+let rec min_points p =
+  if length p = 1 then hd p
+  else let min_rest = min_points (tl p) in
+  if (hd p).y < min_rest.y then hd p
+  else min_rest;;
+
+let angle v1 v2 =
+  let v11 = abs_float ((fst v1).x -. (snd v1).x)
+  and v12 = abs_float ((fst v1).y -. (snd v1).y)
+  and v21 = abs_float ((fst v2).x -. (snd v2).x)
+  and v22 = abs_float ((fst v2).y -. (snd v2).y) in
+  let lv1 = sqrt (v11**2. +. v12**2.)
+  and lv2 = sqrt (v21**2. +. v22**2.)
+  and sca_prod = (v11 *. v21) +. (v12 *. v22) in
+  acos (sca_prod /. (lv1 *. lv2));;
+  
+
+let convex_hull points = (*[(hd points,hd (tl points)); (hd points,hd (tl (tl points))); (hd (tl points), hd (tl (tl points)))]*)
+  let u = min_points points 
+  and local_min = ref infinity in
+  let points' = ref (remove points u)
+  and precedents = ref [u] 
+  and v = ref u in
+  while length !points' > 0
+  do
+    let a = angle (u, {x=u.x;y=u.y}) (u, hd !points') in
+    if a < !local_min then (
+      local_min := a;
+      v := hd !points' );
+    points' := tl !points'
+  done;
+  precedents := !v::( !precedents);
+  while !v <> u
+  do
+    points' := remove points !v;
+    let succ_v = ref u in
+    while length !points' > 0
+    do
+      local_min := infinity;
+      let pred_v = hd (tl !precedents) in
+      let a' = angle (pred_v, !v) (!v, hd !points') in
+      if a' < !local_min then (
+          local_min := a';
+          succ_v := hd !points' );
+      points' := tl !points'
+    done;
+    precedents := !succ_v::( !precedents);
+    v := !succ_v
+  done;
+  edges_from_points (tl !precedents);;
 
 let init_delaunay points =
   new_triangles (convex_hull points) (hd points);;
