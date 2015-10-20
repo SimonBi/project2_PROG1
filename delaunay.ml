@@ -16,7 +16,7 @@ Random.init(int_of_float(Sys.time()));;
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
 let wait_time = 0.1;;
-let nb_points = 350;;
+let nb_points = 1250;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -231,7 +231,8 @@ let delaunay_step_by_step points =
   clear_graph ();
   draw_triangles final_triangles;;
 
-delaunay_step_by_step (random nb_points (fst dim) (snd dim));;
+(* delaunay_step_by_step (random nb_points (fst dim) (snd dim));; *)
+draw_triangles (delaunay (random nb_points (fst dim) (snd dim)) (float_of_int (fst dim)) (float_of_int (snd dim)));;
 
 (** Ask to exit. *)
 let quit_loop = ref false in
