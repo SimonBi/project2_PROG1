@@ -121,6 +121,22 @@ let rec extract_edges t_set =
   if length t_set = 0 then []
   else (edges_triangle (hd t_set)) @ (extract_edges (tl t_set));;
 
+let rec extract_points t_set =
+  if length t_set = 0 then []
+  else 
+    let t = hd t_set in
+    [t.p1; t.p2; t.p3] @ (extract_points (tl t_set));;
+
+let rec remove l e =
+  if length l = 0 then []
+  else 
+    if hd l = e then tl l
+    else (hd l)::(remove (tl l) e);;
+
+let rec remove_doubles l =
+  if length l = 0 then []
+  else (hd l)::(remove (tl l) (hd l));;
+
 (** Remove the items that appear more than one time in a list. *)
 let rec keep_single l = 
   if length l = 0 then []
@@ -164,14 +180,28 @@ let add_point t_set p =
   let to_rm_t = select_t t_set p in
   (new_triangles (border to_rm_t) p) @ (rm_t t_set p);;
 
+let convex_hull points = [(hd points,hd (tl points)); (hd points,hd (tl (tl points))); (hd (tl points), hd (tl (tl points)))];;
+
+let init_delaunay points =
+  new_triangles (convex_hull points) (hd points);;
+
+let rm_points_in_t t_set points =
+  let p2rm = ref (remove_doubles (extract_points t_set))
+  and res = ref points in
+  while length !p2rm > 0 do
+    res := remove !res (hd !p2rm);
+    p2rm := tl !p2rm
+  done;
+  !res;;
+
 (** Do the Delaunay's triangulation on a list of points in a limited space. *)
-let delaunay points max_x max_y = 
-  let t1 = {p1={x=0.;y=0.}; p2={x=0.;y=max_y}; p3={x=max_x;y=max_y}}
-  and t2 = {p1={x=0.;y=0.}; p2={x=max_x;y=0.}; p3={x=max_x;y=max_y}} in
+let delaunay points = 
+  let init_triangles = init_delaunay points in
+  let remaining_points = rm_points_in_t init_triangles points in
   let rec insert_points points' t_set' = 
     if length points' = 0 then t_set'
     else add_point (insert_points (tl points') t_set') (hd points') in
-  insert_points points [t1; t2];;
+  insert_points remaining_points init_triangles;;
 
 (** Draw points of a list. *)
 let rec draw_points points =
@@ -231,7 +261,8 @@ let delaunay_step_by_step points =
   clear_graph ();
   draw_triangles final_triangles;;
 
-delaunay_step_by_step (random nb_points (fst dim) (snd dim));;
+(* delaunay_step_by_step (random nb_points (fst dim) (snd dim));;*)
+draw_triangles (delaunay (random nb_points (fst dim) (snd dim)));;
 
 (** Ask to exit. *)
 let quit_loop = ref false in
