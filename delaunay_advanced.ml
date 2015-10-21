@@ -137,6 +137,10 @@ let rec remove_doubles l =
   if length l = 0 then []
   else (hd l)::(remove (tl l) (hd l));;
 
+let rec rm_points_in_points points rm_points =
+  if length rm_points = 0 then points
+  else rm_points_in_points (remove points (hd rm_points)) (tl rm_points);;
+
 (** Remove the items that appear more than one time in a list. *)
 let rec keep_single l = 
   if length l = 0 then []
@@ -193,10 +197,10 @@ let rec min_points p =
   else min_rest;;
 
 let angle v1 v2 =
-  let v11 = abs_float ((fst v1).x -. (snd v1).x)
-  and v12 = abs_float ((fst v1).y -. (snd v1).y)
-  and v21 = abs_float ((fst v2).x -. (snd v2).x)
-  and v22 = abs_float ((fst v2).y -. (snd v2).y) in
+  let v11 = (fst v1).x -. (snd v1).x
+  and v12 = (fst v1).y -. (snd v1).y
+  and v21 = (fst v2).x -. (snd v2).x
+  and v22 = (fst v2).y -. (snd v2).y in
   let lv1 = sqrt (v11**2. +. v12**2.)
   and lv2 = sqrt (v21**2. +. v22**2.)
   and sca_prod = (v11 *. v21) +. (v12 *. v22) in
@@ -211,34 +215,39 @@ let convex_hull points = (*[(hd points,hd (tl points)); (hd points,hd (tl (tl po
   and v = ref u in
   while length !points' > 0
   do
-    let a = angle (u, {x=u.x;y=u.y}) (u, hd !points') in
+    let a = angle (u, {x=u.x+.1.;y=u.y}) (u, hd !points') in
     if a < !local_min then (
       local_min := a;
       v := hd !points' );
-    points' := tl !points'
+    points' := tl !points';
   done;
   precedents := !v::( !precedents);
+  let points_save = ref points in
   while !v <> u
   do
-    points' := remove points !v;
+    points_save := remove !points_save !v;
+    points' := !points_save;
     let succ_v = ref u in
     while length !points' > 0
     do
       local_min := infinity;
       let pred_v = hd (tl !precedents) in
-      let a' = angle (pred_v, !v) (!v, hd !points') in
+      let a' = angle ( !v, pred_v) ( !v, hd !points') in
       if a' < !local_min then (
           local_min := a';
           succ_v := hd !points' );
       points' := tl !points'
     done;
     precedents := !succ_v::( !precedents);
-    v := !succ_v
+    v := !succ_v;
+    print_string "lel2"
   done;
   edges_from_points (tl !precedents);;
 
 let init_delaunay points =
-  new_triangles (convex_hull points) (hd points);;
+  let border_edges = convex_hull points in
+  let border_points = map (fun x -> fst x) border_edges in
+  new_triangles border_edges (hd (rm_points_in_points points border_points));;
 
 let rm_points_in_t t_set points =
   let p2rm = ref (remove_doubles (extract_points t_set))
