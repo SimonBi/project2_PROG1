@@ -15,8 +15,8 @@ Random.init(int_of_float(Sys.time()));;
 
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
-let wait_time = 1.1;;
-let nb_points = 50;;
+let wait_time = 0.1;;
+let nb_points = 350;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -35,6 +35,8 @@ let rec print_list l = if length l = 0 then print_string "\n"
                        else (print_int (hd l); print_string " "; print_list (tl l));;
 let rec print_list_tuple l = if length l = 0 then print_string "\n"
 else (print_tuple (hd l); print_list_tuple (tl l));;*)
+
+let print_point p = print_string "("; print_float p.x; print_string ","; print_float p.y; print_string ")";;
 
 (** Pause the process. *)
 let minisleep sec = 
@@ -201,12 +203,11 @@ let angle v1 v2 =
   and v12 = (snd v1).y -. (fst v1).y
   and v21 = (snd v2).x -. (fst v2).x
   and v22 = (snd v2).y -. (fst v2).y in
-  let lv1 = sqrt (v11**2. +. v12**2.)
-  and lv2 = sqrt (v21**2. +. v22**2.)
-  and sca_prod = (v11 *. v21) +. (v12 *. v22) in
-  print_float (sca_prod /. (lv1 *. lv2));
-  acos (sca_prod /. (lv1 *. lv2));;
-(* utiliser tangente pour savoir le signe ? tan x = oppose/adjacent*)
+  let angle1 = atan2 v22 v21
+  and angle2 = atan2 v12 v11 in
+  let angleF = angle1 -. angle2 in
+  if angleF > 0. then angleF -. 7.
+  else angleF;;
   
 
 let convex_hull points =
@@ -241,8 +242,7 @@ let convex_hull points =
       points' := tl !points'
     done;
     precedents := !succ_v::( !precedents);
-    v := !succ_v;
-    print_string "lel2"
+    v := !succ_v
   done;
   edges_from_points (tl !precedents);;
 
@@ -344,10 +344,7 @@ let delaunay_step_by_step points =
   let final_triangles = insert_points remaining_points init_triangles [] in
   minisleep wait_time;
   clear_graph ();
-  draw_triangles final_triangles;
-  clear_graph ();
-  print_string "lel3";
-  draw_triangles init_triangles;;
+  draw_triangles final_triangles;;
 
 delaunay_step_by_step (random nb_points (fst dim) (snd dim));;
 (* draw_triangles (delaunay (random nb_points (fst dim) (snd dim)));;*)
