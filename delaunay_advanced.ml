@@ -15,8 +15,8 @@ Random.init(int_of_float(Sys.time()));;
 
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
-let wait_time = 0.1;;
-let nb_points = 350;;
+let wait_time = 1.1;;
+let nb_points = 50;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -185,9 +185,9 @@ let add_point t_set p =
   (new_triangles (border to_rm_t) p) @ (rm_t t_set p);;
 
 let edges_from_points p =
-  let rec edges' p =
-    if length p = 1 then []
-    else (hd p, hd (tl p))::(edges' (tl p)) in
+  let rec edges' p' =
+    if length p' = 1 then []
+    else (hd p', hd (tl p'))::(edges' (tl p')) in
   (hd p, nth p ((length p)-1))::(edges' p);;
 
 let rec min_points p =
@@ -197,17 +197,19 @@ let rec min_points p =
   else min_rest;;
 
 let angle v1 v2 =
-  let v11 = (fst v1).x -. (snd v1).x
-  and v12 = (fst v1).y -. (snd v1).y
-  and v21 = (fst v2).x -. (snd v2).x
-  and v22 = (fst v2).y -. (snd v2).y in
+  let v11 = (snd v1).x -. (fst v1).x
+  and v12 = (snd v1).y -. (fst v1).y
+  and v21 = (snd v2).x -. (fst v2).x
+  and v22 = (snd v2).y -. (fst v2).y in
   let lv1 = sqrt (v11**2. +. v12**2.)
   and lv2 = sqrt (v21**2. +. v22**2.)
   and sca_prod = (v11 *. v21) +. (v12 *. v22) in
+  print_float (sca_prod /. (lv1 *. lv2));
   acos (sca_prod /. (lv1 *. lv2));;
+(* utiliser tangente pour savoir le signe ? tan x = oppose/adjacent*)
   
 
-let convex_hull points = (*[(hd points,hd (tl points)); (hd points,hd (tl (tl points))); (hd (tl points), hd (tl (tl points)))]*)
+let convex_hull points =
   let u = min_points points 
   and local_min = ref infinity in
   let points' = ref (remove points u)
@@ -228,10 +230,10 @@ let convex_hull points = (*[(hd points,hd (tl points)); (hd points,hd (tl (tl po
     points_save := remove !points_save !v;
     points' := !points_save;
     let succ_v = ref u in
+    local_min := infinity;
+    let pred_v = hd (tl !precedents) in
     while length !points' > 0
     do
-      local_min := infinity;
-      let pred_v = hd (tl !precedents) in
       let a' = angle ( !v, pred_v) ( !v, hd !points') in
       if a' < !local_min then (
           local_min := a';
@@ -304,7 +306,7 @@ let rec draw_triangles triangles =
   else (draw_triangle (hd triangles); draw_triangles (tl triangles));;
 
 (** Do the delaunay's triangulation with pauses and graphical visualization. *)
-let delaunay_step_by_step points =
+let delaunay_step_by_step_old points =
   let max_x = float_of_int (fst dim)
   and max_y = float_of_int (snd dim) in
   let t1 = {p1={x=0.;y=0.}; p2={x=0.;y=max_y}; p3={x=max_x;y=max_y}}
@@ -325,8 +327,30 @@ let delaunay_step_by_step points =
   clear_graph ();
   draw_triangles final_triangles;;
 
-(* delaunay_step_by_step (random nb_points (fst dim) (snd dim));;*)
-draw_triangles (delaunay (random nb_points (fst dim) (snd dim)));;
+let delaunay_step_by_step points =
+  let init_triangles = init_delaunay points in
+  let remaining_points = rm_points_in_t init_triangles points in
+  let rec insert_points points' t_set' hidden_points' = 
+    if length points' = 0 then t_set'
+    else (
+      let new_triangles = insert_points (tl points') t_set' ((hd points')::hidden_points') in
+      minisleep wait_time;
+      while button_down () do minisleep wait_time done;
+      clear_graph ();
+      draw_point_added (hd points');
+      draw_hidden_points hidden_points';
+      draw_triangles new_triangles;
+      add_point new_triangles (hd points') ) in
+  let final_triangles = insert_points remaining_points init_triangles [] in
+  minisleep wait_time;
+  clear_graph ();
+  draw_triangles final_triangles;
+  clear_graph ();
+  print_string "lel3";
+  draw_triangles init_triangles;;
+
+delaunay_step_by_step (random nb_points (fst dim) (snd dim));;
+(* draw_triangles (delaunay (random nb_points (fst dim) (snd dim)));;*)
 
 (** Ask to exit. *)
 let quit_loop = ref false in
