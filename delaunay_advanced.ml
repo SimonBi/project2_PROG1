@@ -17,7 +17,7 @@ Random.self_init ();;
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
 let wait_time = 0.1;;
-let nb_points = 350;;
+let nb_points = 550;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -105,17 +105,25 @@ let determinant m =
                 (fun x -> (Array.init (Array.length m) (fun y -> (x,y)))));;
 
 let is_flat t =
-  let s1x = t.p1.x -. t.p2.x
+  (* let s1x = t.p1.x -. t.p2.x
   and s1y = t.p1.y -. t.p2.y
   and s2x = t.p2.x -. t.p3.x
   and s2y = t.p2.y -. t.p3.y
   and s3x = t.p3.x -. t.p1.x
   and s3y = t.p3.y -. t.p1.y in
-  (s2y-.s1y) *. (s3x-.s2x) = (s3y-.s2y) *. (s2x-.s1x);;
+  (s2y-.s1y) *. (s3x-.s2x) = (s3y-.s2y) *. (s2x-.s1x);;*)
+  (* let m = [|[|t.p2.x -. t.p1.x; t.p2.y -. t.p1.y|];
+            [|t.p3.x -. t.p1.x; t.p3.y -. t.p1.y|]|] in
+  print_float (determinant m);
+  determinant m = 0.;;*)
+  let part1 = (t.p2.y -. t.p1.y) *. (t.p3.x -. t.p2.x)
+  and part2 = (t.p3.y -. t.p2.y) *. (t.p2.x -. t.p1.x) in
+  print_string "("; print_float part1; print_string ","; print_float part2; print_string ")";
+  part1 = part2;;
 
 (** Test if a point is in the circumscribed circle of a triangle. *)
 let in_circle t d =
-  if is_flat t then false
+  if is_flat t then (print_string "lel"; false)
   else
   let correctT = direct t in
   let a = correctT.p1
@@ -125,7 +133,7 @@ let in_circle t d =
             [|b.x; b.y; ((b.x)**2.) +. ((b.y)**2.); 1.|]; 
             [|c.x; c.y; ((c.x)**2.) +. ((c.y)**2.); 1.|]; 
             [|d.x; d.y; ((d.x)**2.) +. ((d.y)**2.); 1.|]|] in
-  determinant m >= 0.;;
+  determinant m > 0.;;
 
 (** Get the list of edges of a single triangle. *)
 let edges_triangle t = [(t.p1, t.p2); (t.p1, t.p3); (t.p2, t.p3)];;

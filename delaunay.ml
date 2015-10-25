@@ -11,12 +11,12 @@ open List;;
 
 close_graph ();;
 open_graph " 800x600";;
-Random.init(int_of_float(Sys.time()));;
+Random.self_init ();;
 
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
 let wait_time = 0.1;;
-let nb_points = 1250;;
+let nb_points = 950;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
