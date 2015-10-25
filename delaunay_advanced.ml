@@ -4,14 +4,15 @@ Course : PROG1
 Authors : Simon Bihel
 Institute : ENS Rennes, Computer Science Department
 *)
-#load "graphics.cma"
-#load "unix.cma"
+(* #load "graphics.cma"
+#load "unix.cma" *)
 open Graphics;;
 open List;;
 
 close_graph ();;
 open_graph " 800x600";;
-Random.init(int_of_float(Sys.time()));;
+(* Random.init(int_of_float(Sys.time()));;*)
+Random.self_init ();;
 
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
@@ -103,8 +104,19 @@ let determinant m =
   determinant' (Array.init (Array.length m)
                 (fun x -> (Array.init (Array.length m) (fun y -> (x,y)))));;
 
+let is_flat t =
+  let s1x = t.p1.x -. t.p2.x
+  and s1y = t.p1.y -. t.p2.y
+  and s2x = t.p2.x -. t.p3.x
+  and s2y = t.p2.y -. t.p3.y
+  and s3x = t.p3.x -. t.p1.x
+  and s3y = t.p3.y -. t.p1.y in
+  (s2y-.s1y) *. (s3x-.s2x) = (s3y-.s2y) *. (s2x-.s1x);;
+
 (** Test if a point is in the circumscribed circle of a triangle. *)
-let in_circle t d = 
+let in_circle t d =
+  if is_flat t then false
+  else
   let correctT = direct t in
   let a = correctT.p1
   and b = correctT.p2
