@@ -17,7 +17,7 @@ Random.self_init ();;
 (** ########## Global variables that can be changed. ########## *)
 let dim = (800, 600);;
 let wait_time = 0.1;;
-let nb_points = 550;;
+let nb_points = 100;;
 
 type point = {x: float; y: float};;
 type triangle = {p1: point; p2: point; p3: point};;
@@ -38,6 +38,8 @@ let rec print_list_tuple l = if length l = 0 then print_string "\n"
 else (print_tuple (hd l); print_list_tuple (tl l));;*)
 
 let print_point p = print_string "("; print_float p.x; print_string ","; print_float p.y; print_string ")";;
+
+let rev_t t = (snd t, fst t);;
 
 (** Pause the process. *)
 let minisleep sec = 
@@ -118,12 +120,12 @@ let is_flat t =
   determinant m = 0.;;*)
   let part1 = (t.p2.y -. t.p1.y) *. (t.p3.x -. t.p2.x)
   and part2 = (t.p3.y -. t.p2.y) *. (t.p2.x -. t.p1.x) in
-  print_string "("; print_float part1; print_string ","; print_float part2; print_string ")";
+  (*print_string "("; print_float part1; print_string ","; print_float part2; print_string ")";*)
   part1 = part2;;
 
 (** Test if a point is in the circumscribed circle of a triangle. *)
 let in_circle t d =
-  if is_flat t then (print_string "lel"; false)
+  if is_flat t then false
   else
   let correctT = direct t in
   let a = correctT.p1
@@ -210,7 +212,7 @@ let edges_from_points p =
   let rec edges' p' =
     if length p' = 1 then []
     else (hd p', hd (tl p'))::(edges' (tl p')) in
-  (hd p, nth p ((length p)-1))::(edges' p);;
+  (nth p ((length p)-1), hd p)::(edges' p);;
 
 let rec min_points p =
   if length p = 1 then hd p
@@ -266,10 +268,53 @@ let convex_hull points =
   done;
   edges_from_points (tl !precedents);;
 
+let triangle_from_edges edges_set =
+  let p1 = fst (hd edges_set)
+  and p2 = snd (hd edges_set)
+  and p3 = snd (hd (tl edges_set)) in
+  {p1=p1; p2=p2; p3=p3};;
+
+let rec first_part l i =
+  if i = 0 then []
+  else (hd l)::(first_part (tl l) (i-1));;
+
+let rec second_part l i =
+  if i = 0 then l
+  else second_part (tl l) (i-1);;
+
+let turn l =
+  let n = length l in
+  (second_part l (n/2))@(first_part l (n/2));;
+
+let rec triangles_from_convex_hull edges_set =
+  let n = length edges_set in
+  if n = 3 then [triangle_from_edges edges_set]
+  else
+    if n mod 2 = 0 then
+      let new_edge1 = (snd (nth edges_set ((n/2)-1)), fst (hd edges_set))
+      and new_edge2 = (fst (hd edges_set), snd (nth edges_set ((n/2)-1))) in
+      (triangles_from_convex_hull
+        (turn ((first_part edges_set (n/2))@[new_edge1])))@
+      (triangles_from_convex_hull
+        (turn (new_edge2::(second_part edges_set (n/2)))))
+    else
+      let new_edge1 = (snd (nth edges_set ((n/2)-1)), fst (hd edges_set))
+      and new_edge2 = (fst (hd edges_set), snd (nth edges_set (n/2)))
+      and mid_edge = nth edges_set (n/2) in
+      (triangles_from_convex_hull
+        (turn ((first_part edges_set (n/2))@[new_edge1])))@
+      [triangle_from_edges [new_edge1; new_edge2; (snd mid_edge, fst mid_edge)]]@
+      (triangles_from_convex_hull
+        (turn (new_edge2::(second_part edges_set ((n/2)+1)))))
+  ;;
+
 let init_delaunay points =
   let border_edges = convex_hull points in
-  let border_points = map (fun x -> fst x) border_edges in
+  triangles_from_convex_hull border_edges;;
+  (*let border_points = map (fun x -> fst x) border_edges in
   new_triangles border_edges (hd (rm_points_in_points points border_points));;
+  new_triangles border_edges {x=(float_of_int (size_x ())) /. 2.;
+                              y=(float_of_int (size_y ())) /. 2.};;*)
 
 let rm_points_in_t t_set points =
   let p2rm = ref (remove_doubles (extract_points t_set))
@@ -365,6 +410,9 @@ let delaunay_step_by_step points =
   minisleep wait_time;
   clear_graph ();
   draw_triangles final_triangles;;
+  (*clear_graph ();
+  draw_triangles init_triangles;
+  draw_hidden_points remaining_points;;*)
 
 delaunay_step_by_step (random nb_points (fst dim) (snd dim));;
 (* draw_triangles (delaunay (random nb_points (fst dim) (snd dim)));;*)
