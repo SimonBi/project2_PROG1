@@ -1,0 +1,117 @@
+\documentclass[a4paper,11pt]{article}%
+\usepackage{a4wide}%
+
+\usepackage[english]{babel}%
+\usepackage[utf8]{inputenc}%
+\usepackage[T1]{fontenc}%
+
+\usepackage{graphicx}%
+\usepackage{xspace}%
+
+\usepackage{url} \urlstyle{sf}%
+\DeclareUrlCommand\email{\urlstyle{sf}}%
+
+\usepackage{mathpazo}%
+\let\bfseriesaux=\bfseries%
+\renewcommand{\bfseries}{\sffamily\bfseriesaux}
+
+\newenvironment{keywords}%
+{\description\item[Keyword.]}%
+{\enddescription}
+
+
+\newenvironment{remarque}%
+{\description\item[Remark.]\sl}%
+{\enddescription}
+
+\font\manual=manfnt
+\newcommand{\dbend}{{\manual\char127}}
+
+\newenvironment{attention}%
+{\description\item[\dbend]\sl}%
+{\enddescription}
+
+\usepackage{listings}%
+
+\lstset{%
+  basicstyle=\sffamily,%
+  columns=fullflexible,%
+  language=caml,%
+  frame=lb,%
+  frameround=fftf,%
+}%
+
+\lstMakeShortInline{|}
+
+\parskip=0.3\baselineskip%
+\sloppy%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Delaunay's triangulation \\ Project 2 PROG1}
+
+\author{Simon Bihel}
+
+\date{November 8, 2015}
+
+\maketitle
+
+\begin{abstract}
+  Quelques lignes de résumé, 5~au plus.
+\begin{keywords}
+ Quelques mots-clés, séparés par des points-virgules, au singulier,
+ pour terminer le résumé.
+\end{keywords}
+\end{abstract}
+
+
+\section{Basic program}
+
+
+\section{Advanced program}
+
+
+
+\section{Conclusion}
+
+
+\clearpage % Pour être sûr que toutes les figures sont bien éjectées
+
+\appendix % Passer en numérotation en lettres
+
+
+\section{Annex: self evaluation}
+
+\subsubsection*{Strengths}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+\subsubsection*{Weaknesses}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+\subsubsection*{Opportunities}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+\subsubsection*{Threats}
+\begin{itemize}
+\item Point 1.
+\item Point 2.
+\item etc.
+\end{itemize}
+
+
+\end{document}
+
