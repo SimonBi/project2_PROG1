@@ -106,6 +106,7 @@ let determinant m =
   determinant' (Array.init (Array.length m)
                 (fun x -> (Array.init (Array.length m) (fun y -> (x,y)))));;
 
+(** Tast if a triangle is flat, i.e. the three points are collinear. *)
 let is_flat t =
   (* let s1x = t.p1.x -. t.p2.x
   and s1y = t.p1.y -. t.p2.y
@@ -145,12 +146,14 @@ let rec extract_edges t_set =
   if length t_set = 0 then []
   else (edges_triangle (hd t_set)) @ (extract_edges (tl t_set));;
 
+(** From a set of triangles, extract the list of points of the triangles. *)
 let rec extract_points t_set =
   if length t_set = 0 then []
   else 
     let t = hd t_set in
     [t.p1; t.p2; t.p3] @ (extract_points (tl t_set));;
 
+(** Remove one occurence of an element of a list. *)
 let rec remove l e =
   if length l = 0 then []
   else 
@@ -161,6 +164,7 @@ let rec remove_doubles l =
   if length l = 0 then []
   else (hd l)::(remove (tl l) (hd l));;
 
+(** Remove a list of points from an other list of points. *)
 let rec rm_points_in_points points rm_points =
   if length rm_points = 0 then points
   else rm_points_in_points (remove points (hd rm_points)) (tl rm_points);;
@@ -208,18 +212,21 @@ let add_point t_set p =
   let to_rm_t = select_t t_set p in
   (new_triangles (border to_rm_t) p) @ (rm_t t_set p);;
 
+(** From a list of points, create the edges to create a loop of the points. *)
 let edges_from_points p =
   let rec edges' p' =
     if length p' = 1 then []
     else (hd p', hd (tl p'))::(edges' (tl p')) in
   (nth p ((length p)-1), hd p)::(edges' p);;
 
+(** Return the lowest point. *)
 let rec min_points p =
   if length p = 1 then hd p
   else let min_rest = min_points (tl p) in
   if (hd p).y < min_rest.y then hd p
   else min_rest;;
 
+(** Compute the angle between to edges. *)
 let angle v1 v2 =
   let v11 = (snd v1).x -. (fst v1).x
   and v12 = (snd v1).y -. (fst v1).y
@@ -231,7 +238,7 @@ let angle v1 v2 =
   if angleF > 0. then angleF -. 7.
   else angleF;;
   
-
+(** Compute the convex hull of a list of points. *)
 let convex_hull points =
   let u = min_points points 
   and local_min = ref infinity in
@@ -268,24 +275,29 @@ let convex_hull points =
   done;
   edges_from_points (tl !precedents);;
 
+(** From three edges, create a triangle. *)
 let triangle_from_edges edges_set =
   let p1 = fst (hd edges_set)
   and p2 = snd (hd edges_set)
   and p3 = snd (hd (tl edges_set)) in
   {p1=p1; p2=p2; p3=p3};;
 
+(** Get the first part of a list, regarding an index. *)
 let rec first_part l i =
   if i = 0 then []
   else (hd l)::(first_part (tl l) (i-1));;
 
+(** Get the second part of a list, regarding an index. *)
 let rec second_part l i =
   if i = 0 then l
   else second_part (tl l) (i-1);;
 
+(** Turn around a list. *)
 let turn l =
   let n = length l in
   (second_part l (n/2))@(first_part l (n/2));;
 
+(** Compute the first triangles from the convex hull. *)
 let rec triangles_from_convex_hull edges_set =
   let n = length edges_set in
   if n = 3 then [triangle_from_edges edges_set]
@@ -308,6 +320,7 @@ let rec triangles_from_convex_hull edges_set =
         (turn (new_edge2::(second_part edges_set ((n/2)+1)))))
   ;;
 
+(** Initialize the triangulation with triangles from the convex hull. *)
 let init_delaunay points =
   let border_edges = convex_hull points in
   triangles_from_convex_hull border_edges;;
@@ -316,6 +329,7 @@ let init_delaunay points =
   new_triangles border_edges {x=(float_of_int (size_x ())) /. 2.;
                               y=(float_of_int (size_y ())) /. 2.};;*)
 
+(**  *)
 let rm_points_in_t t_set points =
   let p2rm = ref (remove_doubles (extract_points t_set))
   and res = ref points in
@@ -392,6 +406,8 @@ let delaunay_step_by_step_old points =
   clear_graph ();
   draw_triangles final_triangles;;
 
+(** Do the delaunay's triangulation with pauses and graphical visualization,
+  starting with only the convex hull of the points. *)
 let delaunay_step_by_step points =
   let init_triangles = init_delaunay points in
   let remaining_points = rm_points_in_t init_triangles points in
