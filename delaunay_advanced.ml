@@ -153,16 +153,17 @@ let rec extract_points t_set =
     let t = hd t_set in
     [t.p1; t.p2; t.p3] @ (extract_points (tl t_set));;
 
-(** Remove one occurence of an element of a list. *)
+(** Remove all occurences of an element of a list. *)
 let rec remove l e =
   if length l = 0 then []
   else 
-    if hd l = e then tl l
+    if hd l = e then remove (tl l) e
     else (hd l)::(remove (tl l) e);;
 
+(** Remove second occurences of the elements of a list. *)
 let rec remove_doubles l =
   if length l = 0 then []
-  else (hd l)::(remove (tl l) (hd l));;
+  else (hd l)::(remove_doubles (remove (tl l) (hd l)));;
 
 (** Remove a list of points from an other list of points. *)
 let rec rm_points_in_points points rm_points =

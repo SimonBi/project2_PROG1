@@ -1,0 +1,21 @@
+==============================
+Project 2
+Course: PROG1
+Institute: ENS Rennes
+Author: Simon Bihel
+
+==============================
+
+Variables like the number of points can be changed in the begining of the code.
+
+----- Basic program -----
+To use it :
+    $ ocaml delaunay.ml
+
+Caution : enhancement and/or corrections made in the advanced program may not
+          be in the basic version. The code should run fine though.
+
+----- Advanced program -----
+To use it :
+    $ ./make.sh
+    $ ./delaunay_advanced
