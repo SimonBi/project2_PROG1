@@ -24,31 +24,19 @@ type triangle = {p1: point; p2: point; p3: point};;
 type point_set = point list;;
 type triangle_set = triangle list;;
 
-(*let print_array a = for i = 0 to ((Array.length a)-1) do
-                      print_int (fst a.(i)); print_string ","; print_int (snd a.(i)); print_string " "
-                    done; print_string "\n";;
-let print_matrix m = for i = 0 to ((Array.length m)-1) do
-                       print_array m.(i)
-                     done;;
-let print_tuple_int t = print_int (fst t); print_string ","; print_int (snd t); print_string " ";;
-let print_tuple t = print_tuple_int (fst t); print_string ",,"; print_tuple_int (snd t);;
-let rec print_list l = if length l = 0 then print_string "\n"
-                       else (print_int (hd l); print_string " "; print_list (tl l));;
-let rec print_list_tuple l = if length l = 0 then print_string "\n"
-else (print_tuple (hd l); print_list_tuple (tl l));;*)
-
-let print_point p = print_string "("; print_float p.x; print_string ","; print_float p.y; print_string ")";;
-
-let rev_t t = (snd t, fst t);;
+let print_point p = print_string "("; print_float p.x; print_string ",";
+  print_float p.y; print_string ")";;
 
 (** Pause the process. *)
 let minisleep sec = 
   try ignore (Unix.select [] [] [] sec) with 
-    | _ -> print_string "Sleep not working on OSX or interrupted system call.\n";;
+    | _ -> print_string "Sleep not working on OSX or
+                         interrupted system call.\n";;
 
 (** Create a random point in a limited space. *)
 let rec random nb max_x max_y = if nb = 0 then []
-else {x= (Random.float (float_of_int max_x)); y= (Random.float (float_of_int max_y))}
+else {x= (Random.float (float_of_int max_x));
+      y= (Random.float (float_of_int max_y))}
        ::(random (nb-1) max_x max_y);;
 
 (** Test if a triangle is in its direct form. *)
@@ -108,20 +96,8 @@ let determinant m =
 
 (** Tast if a triangle is flat, i.e. the three points are collinear. *)
 let is_flat t =
-  (* let s1x = t.p1.x -. t.p2.x
-  and s1y = t.p1.y -. t.p2.y
-  and s2x = t.p2.x -. t.p3.x
-  and s2y = t.p2.y -. t.p3.y
-  and s3x = t.p3.x -. t.p1.x
-  and s3y = t.p3.y -. t.p1.y in
-  (s2y-.s1y) *. (s3x-.s2x) = (s3y-.s2y) *. (s2x-.s1x);;*)
-  (* let m = [|[|t.p2.x -. t.p1.x; t.p2.y -. t.p1.y|];
-            [|t.p3.x -. t.p1.x; t.p3.y -. t.p1.y|]|] in
-  print_float (determinant m);
-  determinant m = 0.;;*)
   let part1 = (t.p2.y -. t.p1.y) *. (t.p3.x -. t.p2.x)
   and part2 = (t.p3.y -. t.p2.y) *. (t.p2.x -. t.p1.x) in
-  (*print_string "("; print_float part1; print_string ","; print_float part2; print_string ")";*)
   part1 = part2;;
 
 (** Test if a point is in the circumscribed circle of a triangle. *)
@@ -325,12 +301,8 @@ let rec triangles_from_convex_hull edges_set =
 let init_delaunay points =
   let border_edges = convex_hull points in
   triangles_from_convex_hull border_edges;;
-  (*let border_points = map (fun x -> fst x) border_edges in
-  new_triangles border_edges (hd (rm_points_in_points points border_points));;
-  new_triangles border_edges {x=(float_of_int (size_x ())) /. 2.;
-                              y=(float_of_int (size_y ())) /. 2.};;*)
 
-(**  *)
+(** Remove the points in triangles of a list of points. *)
 let rm_points_in_t t_set points =
   let p2rm = ref (remove_doubles (extract_points t_set))
   and res = ref points in
@@ -356,7 +328,7 @@ let rec draw_points points =
     let p = hd points in
     fill_circle (int_of_float p.x) (int_of_float p.y) 4;
     draw_points (tl points)
-  )
+  );;
 
 (** Draw points that should be hidden. *)
 let rec draw_hidden_points points =
@@ -365,7 +337,7 @@ let rec draw_hidden_points points =
     let p = hd points in
     fill_circle (int_of_float p.x) (int_of_float p.y) 4;
     draw_hidden_points (tl points)
-  )
+  );;
 
 (** Draw the point that will be added next. *)
 let draw_point_added point =
@@ -394,7 +366,8 @@ let delaunay_step_by_step_old points =
   let rec insert_points points' t_set' hidden_points' = 
     if length points' = 0 then t_set'
     else (
-      let new_triangles = insert_points (tl points') t_set' ((hd points')::hidden_points') in
+      let new_triangles = insert_points (tl points') t_set'
+                                        ((hd points')::hidden_points') in
       minisleep wait_time;
       while button_down () do minisleep wait_time done;
       clear_graph ();
@@ -415,7 +388,8 @@ let delaunay_step_by_step points =
   let rec insert_points points' t_set' hidden_points' = 
     if length points' = 0 then t_set'
     else (
-      let new_triangles = insert_points (tl points') t_set' ((hd points')::hidden_points') in
+      let new_triangles = insert_points (tl points') t_set'
+                                        ((hd points')::hidden_points') in
       minisleep wait_time;
       while button_down () do minisleep wait_time done;
       clear_graph ();
