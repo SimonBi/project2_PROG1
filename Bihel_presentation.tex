@@ -37,18 +37,56 @@
 	
 	\begin{frame}
 		\frametitle{Approach}
+		\begin{columns}[T]
+			\begin{column}{.5\textwidth}
+				\hspace*{0cm} \includegraphics[height=0.5\textheight]{basic.png} \hspace*{\fill}
+			\end{column}
+			\begin{column}{.45\textwidth}
+				\begin{itemize}
+					\item Simple, easy to understand;
+					\item not optimized.
+				\end{itemize}
+			\end{column}
+		\end{columns}
 	\end{frame}
 
 	
 	\section{Advanced features}
 	\begin{frame}
-		\frametitle{Summary}
+		\frametitle{Advanced features}
 		\tableofcontents[currentsection]
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Computing the convex hull}
+		\begin{itemize}
+			\item Gift wrapping algorithm.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Creating the first triangles}
+		Multiple methods tried :
+		\begin{itemize}
+			\item adding a point in the center ;
+			\item cut in half recursively.
+		\end{itemize}
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Nearly flat triangles}
+		\begin{columns}[T]
+			\begin{column}{.5\textwidth}
+				\hspace*{0cm} \includegraphics[height=0.5\textheight]{convexhull-messedup-abit.png} \hspace*{\fill}
+			\end{column}
+			\begin{column}{.45\textwidth}
+				Issue with crossing edges because of huge circumscribed circles facing toward the center.
+			\end{column}
+		\end{columns}
 	\end{frame}
 
 	
 	\section*{Conclusion}
-	\subsection*{Conclusion}
 	\begin{frame}
 		\frametitle{Conclusion}
 		\begin{block}{Possible improvements}
@@ -60,7 +98,6 @@
 	\end{frame}
 	
 	
-	\subsection*{Take away}
 	\begin{frame}
 		\frametitle{~}
 		\begin{center}
