@@ -58,14 +58,14 @@
 
 \title{Delaunay's triangulation \\ Project 2 PROG1}
 
-\author{Simon Bihel}
+\author{Simon Bihel \\ ENS Rennes, Computer Science Department, 1st year}
 
 \date{November 8, 2015}
 
 \maketitle
 
 \begin{abstract}
-	This report will present and discuss my work on the second project of the course PROG1.
+	In this report I present and discuss my work on the second project of the course PROG1.
 \begin{keywords}
 	Delaunay; triangulation; convex hull.
 \end{keywords}
@@ -93,7 +93,7 @@ With the basic version covered, we can now talk about the extensions.
 
 \section{Advanced program}
 
-The main extension that I decided to add was the triangulation without adding points, thus starting with the convex hull of the existing points. The result is shown in the figure~\ref{fig:good} I will explain how I did it and then discuss the problem of nearly flat triangle that I have yet to solve.
+The main extension that I decided to add was the triangulation without adding points, thus starting with the convex hull of the existing points. The result is shown in the figure~\ref{fig:good}. I will explain how I did it and then discuss the problem of nearly flat triangle that I have yet to solve.
 
 \begin{figure}[H]
 	\begin{center}
@@ -104,7 +104,12 @@ The main extension that I decided to add was the triangulation without adding po
 \end{figure}
 
 \subsection{Convex hull}
-To start the triangulation I had to compute which points were on the convex hull. I did it using the gift wrapping algorithm. This method is based on comparing angles between segment. The function that compute angle was hard in the way that it required the find the right order to pass segments.
+To start the triangulation I had to compute which points were on the convex hull. I did it using the gift wrapping algorithm which can be summarized as followed : 
+\begin{itemize}
+	\item get the lowest point ;
+	\item find the next point in the convex hull, to do that you have to find the point that has the bigger angle with the previous edge in the convex hull.
+\end{itemize}
+This method is based on comparing angles between segment. The function that compute angle was hard in the way that it required the find the right order to pass segments (=arguments).
 
 \subsection{Nearly flat triangle}
 With the convex hull we have to create the first triangles to then start the triangulation. I tried a few methods : 
