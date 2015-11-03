@@ -52,6 +52,7 @@
 
 \usepackage{float}  % H option for figures
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{document}
@@ -74,7 +75,7 @@
 
 \section{Basic program}
 
-The obligatory part of the project was well guided and so I will talk about the approach I took to do the various functions. The result is shown in the figure~\ref{fig:basic} 
+The obligatory part of the project was well guided and so I will say a few words about the approach I took to do the various functions. The result is shown in the figure~\ref{fig:basic} 
 
 \begin{figure}[H]
 	\begin{center}
@@ -84,7 +85,7 @@ The obligatory part of the project was well guided and so I will talk about the 
 	\label{fig:basic}
 \end{figure}
 
-I decided to do simple functions, like for |border| where I simply get all the edges and then keep the single ones going twice through the list. The complexity isn't the best but it is quite clear of what the function does. \\
+I decided to do simple functions, like for |border| where I simply get all the edges and then keep the single ones going twice through the list. The complexity isn't the best but it is quite clear of what the function does.
 
 
 With the basic version covered, we can now talk about the extensions.
@@ -109,9 +110,9 @@ To start the triangulation I had to compute which points were on the convex hull
 	\item get the lowest point ;
 	\item find the next point in the convex hull, to do that you have to find the point that has the bigger angle with the previous edge in the convex hull.
 \end{itemize}
-This method is based on comparing angles between segment. The function that compute angle was hard in the way that it required the find the right order to pass segments (=arguments).
+This method is based on comparing angles between segment. The function that compute the angle was hard in the way that it required the find the right order to pass segments (=arguments).
 
-\subsection{Nearly flat triangle}
+\subsection{Initialising and nearly flat triangle}
 With the convex hull we have to create the first triangles to then start the triangulation. I tried a few methods : 
 \begin{itemize}
 	\item adding a point in the middle to then create triangles with an edge of the convex hull and the center points;
@@ -124,23 +125,25 @@ While these create good looking first generation triangles, it can then mess-up 
 	\centering
 	\begin{subfigure}{.5\textwidth}
 		\begin{center}
-			\includegraphics[width=0.99\linewidth]{convexhull-messedup.png}
-		\end{center}
-		\caption{With 600 points}
-		\label{fig:verymessedup}
-	\end{subfigure}%
-	\begin{subfigure}{.5\textwidth}
-		\begin{center}
 			\includegraphics[width=0.99\linewidth]{convexhull-messedup-abit.png}
 		\end{center}
 		\caption{With 100 points}
 		\label{fig:messedupabit}
+	\end{subfigure}%
+	\begin{subfigure}{.5\textwidth}
+		\begin{center}
+			\includegraphics[width=0.99\linewidth]{convexhull-messedup.png}
+		\end{center}
+		\caption{With 600 points}
+		\label{fig:verymessedup}
 	\end{subfigure}
 	\caption{Bad Delaunay's triangulations}
 	\label{fig:messedup}
 \end{figure}
 
-This is due to nearly flat triangles that have huge circumscribed circles, which envelop points that are far away. These don't occur when we start with a rectangle because we start with only two big triangles so when we add a new point. Either it's close to the border and so the big circumscribed circle is on the outside,  either all triangles are reshaped and that avoid having a flat new triangle.
+This is due to nearly flat triangles that have huge circumscribed circles, which envelop points that are far away. These don't occur when we start with a rectangle because we start with only two big triangles. So when we add a new point either it's close to the border and so the big circumscribed circle is on the outside, either all triangles are reshaped and that avoid having a flat new triangle because we have big triangles. Over time, the size of circumscribed triangles decrease.
+
+No solution have appeared to me that doesn't imply deleting triangles or points, or adding points. You can delete triangles that has edges that cut multiple other edges, or you can avoid adding a point if it's going to add a nearly flat triangle. Or you can add an other point symmetrically to the longest side of the new nearly flat triangle to then have a diamond and cut it differently to have better shaped triangles. These methods need to say if a triangle cuts other ones or to say if a triangle is nearly flat. For the first one you can test all the edges to see if they cut another one, but that would be long. For testing if a triangle is nearly flat you could see a few step ahead if it has generated cutting triangles, which would be even bigger in complexity.
 
 \section{Conclusion}
 After all, I haven't done much more than the basic version required for the project. Even though I put quite a lot of work in the convex hull part, both on computing the convex hull part and using it, it has not paid.
